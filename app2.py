@@ -2,106 +2,102 @@ import streamlit as st
 import time
 import pandas as pd
 
-# Configuración de Entorno de Ingeniería
-st.set_page_config(page_title="Algoritmos Avanzados - UTS", page_icon="💻", layout="wide")
+# Configuración técnica
+st.set_page_config(page_title="Laboratorio Avanzado de Bucles - UTS", page_icon="🔁", layout="wide")
 
-st.title("🚀 Laboratorio de Algoritmos: Bucles y Procesamiento de Datos")
+st.title("🔁 Laboratorio Avanzado de Bucles e Iteraciones")
 st.markdown("""
-En este nivel, no basta con ver el ciclo; debes **construir la lógica**. 
-Aprenderás a usar acumuladores, contadores y validadores dentro de estructuras repetitivas.
+Bienvenido al entorno de experimentación de ciclos. Aquí podrás visualizar cómo la computadora 
+procesa patrones repetitivos y probar tu propio código.
 """)
 
-# --- SECCIÓN 1: EL DESAFÍO DEL ACUMULADOR ---
-st.header("1. El Desafío del Acumulador (Sumatoria de Notas)")
-st.write("Imagina que debes promediar las notas de un grupo de estudiantes de las UTS.")
+# --- SECCIÓN 1: VISUALIZADOR DE TRAZABILIDAD ---
+st.header("1. Visualizador de Trazabilidad (Paso a Paso)")
+st.info("Configura el ciclo y observa cómo cambian las variables en cada 'vuelta'.")
 
-col1, col2 = st.columns([1, 1])
+col1, col2 = st.columns([1, 2])
 
 with col1:
-    num_notas = st.number_input("¿Cuántas notas vas a procesar?", 1, 10, 3)
-    valor_nota = st.slider("Valor de cada nota (Simulación):", 0.0, 5.0, 3.5, step=0.1)
+    tipo = st.selectbox("Selecciona el tipo de bucle:", ["Ciclo FOR (Rango)", "Ciclo WHILE (Condición)"])
+    limite = st.slider("Número de iteraciones:", 1, 15, 5)
+    velocidad = st.select_slider("Velocidad de ejecución:", options=["Lento", "Normal", "Rápido"], value="Normal")
     
-    st.markdown("### 🛠️ Completa el Algoritmo")
-    st.write("Si el código fuera este, ¿qué valor debería tener el acumulador al final?")
-    st.code(f"""
-suma_total = 0
-for i in range({num_notas}):
-    nota = {valor_nota}
-    suma_total = suma_total + nota
-promedio = suma_total / {num_notas}
-    """, language="python")
+    delay = {"Lento": 1.0, "Normal": 0.5, "Rápido": 0.1}[velocidad]
+    run_btn = st.button("🚀 Ejecutar y Rastrear")
 
-if st.button("▶️ Ejecutar Prueba de Escritorio"):
-    col_a, col_b = st.columns(2)
-    suma_temp = 0
-    trazabilidad = []
+with col2:
+    st.write("**Código equivalente en Python:**")
+    if "FOR" in tipo:
+        codigo_visual = f"for i in range({limite}):\n    # En cada vuelta i aumenta automáticamente\n    print(f'Iteración: {{i}}')"
+    else:
+        codigo_visual = f"i = 0\nwhile i < {limite}:\n    # Debemos aumentar i manualmente\n    print(f'Iteración: {{i}}')\n    i += 1"
+    st.code(codigo_visual, language="python")
+
+if run_btn:
+    # Contenedores para la visualización dinámica
+    status = st.empty()
+    progreso = st.progress(0)
+    tabla_placeholder = st.empty()
     
-    for i in range(num_notas):
-        suma_temp += valor_nota
-        trazabilidad.append({
-            "Iteración": i + 1,
-            "Valor Nota": valor_nota,
-            "Suma Acumulada": round(suma_temp, 2),
-            "Lógica": f"{round(suma_temp - valor_nota, 2)} + {valor_nota}"
-        })
+    datos_iteracion = []
+    
+    for i in range(limite):
+        # Actualizar estado
+        status.markdown(f"**Ejecutando vuelta:** `{i + 1}` de `{limite}` | **Valor de i:** `{i}`")
+        progreso.progress((i + 1) / limite)
         
-    with col_a:
-        st.table(pd.DataFrame(trazabilidad))
-    with col_b:
-        promedio_final = suma_temp / num_notas
-        st.metric("Promedio Final Calculado", round(promedio_final, 2))
-        if promedio_final >= 3.0:
-            st.success("Resultado: EL GRUPO APRUEBA")
-        else:
-            st.error("Resultado: EL GRUPO REPRUEBA")
+        # Guardar datos para la tabla de trazabilidad
+        datos_iteracion.append({"Vuelta": i + 1, "Valor de i": i, "Estado": "Procesando..."})
+        df = pd.DataFrame(datos_iteracion)
+        tabla_placeholder.table(df)
+        
+        time.sleep(delay)
+    
+    status.success(f"✅ ¡Ciclo completado! Se realizaron {limite} iteraciones exitosas.")
 
 st.divider()
 
-# --- SECCIÓN 2: CONSOLA DE CÓDIGO INTERACTIVA (ADVANCED) ---
-st.header("2. Consola Interactiva: Manipulación de Índices")
-st.write("Aquí los estudiantes deben escribir la expresión que controla la **salida** del bucle.")
+# --- SECCIÓN 2: LABORATORIO DE EXPERIMENTACIÓN LIBRE ---
+st.header("2. Laboratorio de Código: Escribe tu Lógica")
+st.write("Usa la variable `i` para crear una secuencia. La computadora calculará el resultado en cada paso.")
 
-c3, c4 = st.columns([1, 1])
+col3, col4 = st.columns([1, 1])
 
-with c3:
-    st.markdown("**Reto de Lógica:**")
-    st.write("Genera una secuencia donde el valor se multiplique por el índice y se le sume una constante.")
-    
-    expresion = st.text_input("Ingresa tu expresión (ej: (i * 2) + 5):", "i * 10")
-    repeticiones = st.slider("Número de ciclos:", 1, 20, 5)
-
-with c4:
-    st.markdown("**Depuración en Tiempo Real:**")
-    try:
-        resultados = []
-        for i in range(repeticiones):
-            # Seguridad: Evaluamos la expresión del alumno
-            res = eval(expresion, {"i": i})
-            resultados.append({"Índice (i)": i, "Tu Expresión": expresion, "Resultado": res})
-        
-        st.dataframe(resultados, use_container_width=True)
-        
-        # Gráfico de comportamiento lógico
-        df_grafica = pd.DataFrame(resultados)
-        st.line_chart(df_grafica["Resultado"])
-        
-    except Exception as e:
-        st.warning("⚠️ Error en la sintaxis. Recuerda usar 'i' como tu variable de control.")
-
-st.divider()
-
-# --- SECCIÓN 3: ÁREA DE PROYECTO (MÉTODO DE CASOS) ---
-with st.expander("📝 PROYECTO: Algoritmo de Control de Inventario Nexan"):
-    st.write("""
-    **Contexto:** En tu empresa **Nexan Soluciones Tecnológicas**, recibes un lote de 10 computadores. 
-    Debes crear un ciclo que reste 1 al stock cada vez que se realice una venta, hasta que el stock llegue a cero.
-    """)
+with col3:
+    st.markdown("**Configura tu lógica personalizada:**")
+    formula = st.text_input("Ingresa una operación matemática (ej: 5 * i o i**2):", "10 * i")
+    rango_lab = st.number_input("¿Cuántas veces quieres repetir?", 1, 50, 5)
     
     st.markdown("""
-    **Preguntas de Ingeniería:**
-    1. ¿Qué tipo de ciclo es más eficiente si no sabemos cuántas ventas se harán por hora? (`While` o `For`)
-    2. ¿Cuál sería la **condición de parada** para evitar que el stock sea negativo?
-    3. Escribe en la consola de arriba la expresión `10 - i` y observa el gráfico. ¿En qué iteración el stock llega a 5?
+    **Sugerencias para probar:**
+    * Tablas de multiplicar: `7 * (i + 1)`
+    * Potencias: `2 ** i`
+    * Sucesiones: `100 - (i * 5)`
     """)
 
-st.caption("Recurso de Nivel Avanzado para Ingeniería de Sistemas | UTS")
+with col4:
+    st.markdown("**Resultado de la Consola:**")
+    resultados_finales = []
+    try:
+        for i in range(rango_lab):
+            valor_calculado = eval(formula, {"i": i})
+            resultados_finales.append({"Iteración": i, "Fórmula": formula.replace("i", str(i)), "Resultado": valor_calculado})
+        
+        st.dataframe(resultados_finales, use_container_width=True)
+    except Exception as e:
+        st.error(f"Error en la lógica: Verifica que estés usando la variable 'i' correctamente.")
+
+st.divider()
+
+# --- SECCIÓN 3: EL RETO DEL BUCLE INFINITO ---
+with st.expander("🚩 RETO AVANZADO: Identificación de Patrones"):
+    st.markdown("""
+    **Misión:** Quieres crear un programa que cuente del **10 al 100 de diez en diez**.
+    
+    1. En el **Laboratorio**, ¿qué fórmula escribirías para que cuando `i=0` el resultado sea 10, y cuando `i=1` sea 20?
+    2. ¿Cuántas repeticiones necesitas para llegar al 100?
+    
+    *Pista: La lógica tiene la forma `(i + 1) * X`. Encuentra el valor de X.*
+    """)
+
+st.caption("Recurso de Ingeniería de Sistemas - Unidades Tecnológicas de Santander")
