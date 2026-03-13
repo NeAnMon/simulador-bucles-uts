@@ -2,12 +2,13 @@ import streamlit as st
 import time
 import pandas as pd
 import random
+import io          # IMPORTANTE: Añadido
+import contextlib  # IMPORTANTE: Añadido
 
-# ==========================================
-# 1. CONFIGURACIÓN Y ESTILO PROFESIONAL
-# ==========================================
-st.set_page_config(page_title="Lab Avanzado de Bucles - UTS", page_icon="🔁", layout="wide")
+# 1. CONFIGURACIÓN ÚNICA (Debe ser la primera de Streamlit)
+st.set_page_config(page_title="Master en Bucles - UTS", page_icon="💻", layout="wide")
 
+# Estilo Profesional
 st.markdown("""
     <style>
     .main { background-color: #f4f7f6; }
@@ -64,7 +65,7 @@ col3, col4 = st.columns([1, 1])
 with col3:
     formula = st.text_input("Ingresa tu operación matemática (usa 'i'):", "i * 10")
     rango_lab = st.number_input("¿Cuántas repeticiones?", 1, 50, 5)
-    st.caption("Prueba: `i**2` (potencia), `7 * (i+1)` (tabla), `100 - (i*5)` (descenso)")
+    st.caption("Prueba: `i**2` (potencia), `7 * (i+1)` (tabla)")
 
 with col4:
     try:
@@ -76,96 +77,71 @@ with col4:
 st.divider()
 
 # ==========================================
-# 1. CONFIGURACIÓN
-st.set_page_config(page_title="Master en Bucles - UTS", page_icon="💻", layout="wide")
-
-st.title("🚀 Desafío de Ingeniería: Construcción de Bucles")
-st.markdown("---")
-
-# --- SECCIÓN DE RETO DE PROGRAMACIÓN ---
+# 4. SECCIÓN 3: RETO DE PROGRAMACIÓN (CON EXEC)
+# ==========================================
 st.header("🎯 Reto: Programación de Tablas de Multiplicar")
-st.write("""
-**Instrucciones:** No basta con la fórmula. Debes escribir el ciclo completo en Python para generar la tabla.
-Usa la variable `base` que te asigna el sistema.
-""")
+st.write("Debes escribir el ciclo completo en Python. El sistema validará tu salida.")
 
 if 'base_reto' not in st.session_state:
     st.session_state.base_reto = random.randint(2, 9)
 
 base = st.session_state.base_reto
-
 col_input, col_output = st.columns([1.2, 0.8])
 
 with col_input:
     st.info(f"👉 **RETO:** Generar la tabla del **{base}** (del 1 al 10)")
-    
-    # Área de texto para código multilínea
     codigo_usuario = st.text_area(
         "Escribe tu código Python aquí:",
-        value=f"# Ejemplo:\nfor i in range(1, 11):\n    print(base * i)",
+        value=f"for i in range(1, 11):\n    print(base * i)",
         height=150
     )
-    
     if st.button("🎲 Cambiar Número"):
         st.session_state.base_reto = random.randint(2, 9)
         st.rerun()
 
 with col_output:
     st.subheader("🖥️ Ejecución y Validación")
-    
     if codigo_usuario:
-        # Capturamos la salida del print()
         f = io.StringIO()
         try:
             with contextlib.redirect_stdout(f):
-                # Ejecutamos el código del alumno en un entorno controlado
-                # Pasamos 'base' como variable global disponible
+                # Ejecutamos con acceso a 'base' y 'print'
                 exec(codigo_usuario, {"base": base, "print": print})
             
-            # Obtenemos lo que el alumno imprimió
             salida = f.getvalue().strip().split('\n')
-            
-            # Limpiamos y convertimos a números para validar
             resultados_alumno = []
             for val in salida:
                 try:
-                    # Intentamos extraer el último número de la línea o la línea completa
+                    # Extraer el número (maneja casos como '7 x 1 = 7')
                     num = int(val.split('=')[-1].strip())
                     resultados_alumno.append(num)
                 except:
                     continue
 
-            # VALIDACIÓN LÓGICA
             esperado = [base * i for i in range(1, 11)]
             
             if resultados_alumno == esperado:
                 st.balloons()
-                st.success("✨ ¡CÓDIGO PERFECTO! Has construido el ciclo correctamente.")
-                st.write("**Tu salida:**")
+                st.success("✨ ¡CÓDIGO PERFECTO!")
                 st.code(f.getvalue())
             else:
-                st.error("❌ La salida no coincide con la tabla esperada.")
-                st.write("**Tu salida actual:**")
-                st.code(f.getvalue() if f.getvalue() else "No hubo salida (usa print)")
-                st.info(f"Pista: Tu código debe imprimir exactamente 10 valores: {esperado}")
+                st.error("❌ La salida no coincide.")
+                st.info(f"Se esperaba: {esperado}")
+                st.code(f.getvalue())
 
         except Exception as e:
-            st.warning(f"⚠️ Error de sintaxis en tu código: {e}")
+            st.warning(f"⚠️ Error de sintaxis: {e}")
 
 st.divider()
 
-# --- SECCIÓN VISUAL DE COMPARACIÓN ---
+# --- AYUDA VISUAL ---
 st.subheader("💡 Ayuda Visual: Estructura de los Ciclos")
 col_for, col_while = st.columns(2)
-
 with col_for:
-    st.markdown("**Patrón del Ciclo FOR**")
-    st.code(f"for i in range(1, 11):\n    resultado = {base} * i\n    print(resultado)", language="python")
-    st.caption("Ideal cuando conoces el número exacto de vueltas.")
-
+    st.markdown("**Patrón FOR**")
+    st.code(f"for i in range(1, 11):\n    print({base} * i)")
 with col_while:
-    st.markdown("**Patrón del Ciclo WHILE**")
-    st.code(f"i = 1\nwhile i <= 10:\n    print({base} * i)\n    i += 1", language="python")
-    st.caption("Ideal cuando dependes de una condición lógica.")
+    st.markdown("**Patrón WHILE**")
+    st.code(f"i = 1\nwhile i <= 10:\n    print({base} * i)\n    i += 1")
 
-st.caption("Laboratorio de Programación UTS - Ing. Nelber Montaguth")
+st.caption("Laboratorio UTS - Ing. Nelber Montaguth")
