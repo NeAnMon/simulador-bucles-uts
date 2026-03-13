@@ -150,4 +150,61 @@ with col_output:
         except Exception as e:
             st.error(f"⚠️ Error de sintaxis o lógica: {e}")
 
+
+st.divider()
+
+# ==========================================
+# SECCIÓN 4: PROYECTO INTEGRADOR - EL CAJERO
+# ==========================================
+st.header("🏆 Proyecto Final: El Cajero Automático Nexan")
+st.write("""
+**Situación:** Debes programar la lógica de un cajero. El programa debe pedir una opción 
+repetidamente hasta que el usuario elija 'Salir'.
+""")
+
+with st.expander("📝 Instrucciones del Algoritmo"):
+    st.markdown("""
+    1.  Crea una variable `saldo = 1000`.
+    2.  Usa un `while` que funcione mientras la opción no sea '3'.
+    3.  **Opción 1:** Consultar saldo (imprime el saldo).
+    4.  **Opción 2:** Retirar $200 (resta al saldo y valida que haya fondos).
+    5.  **Opción 3:** Salir.
+    """)
+
+col_at_1, col_at_2 = st.columns([1.2, 0.8])
+
+with col_at_1:
+    codigo_cajero = st.text_area(
+        "Escribe el código del Cajero aquí:",
+        placeholder="# Pista:\nsaldo = 1000\nopcion = '0'\nwhile opcion != '3':\n    ...",
+        height=300,
+        key="cajero_code"
+    )
+
+with col_at_2:
+    st.subheader("🖥️ Consola del Cajero")
+    if codigo_cajero:
+        f = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(f):
+                # Ejecutamos el código del alumno
+                exec(codigo_cajero, {"print": print})
+            
+            salida_cajero = f.getvalue()
+            if salida_cajero:
+                st.code(salida_cajero, language="text")
+                
+                # Validación de lógica (Buscamos palabras clave en la salida)
+                if "1000" in salida_cajero and "800" in salida_cajero:
+                    st.balloons()
+                    st.success("✨ ¡PROYECTO INTEGRADO CON ÉXITO! Has dominado los ciclos y la lógica financiera.")
+                else:
+                    st.info("Asegúrate de imprimir el saldo inicial y el saldo después de un retiro de 200.")
+            else:
+                st.warning("El código no generó ninguna salida. Revisa tus prints.")
+        
+        except Exception as e:
+            st.error(f"⚠️ Error en el sistema: {e}")
+
+
 st.caption("Ingeniería de Sistemas UTS | Evaluación de Competencias Lógicas")
