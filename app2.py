@@ -76,47 +76,96 @@ with col4:
 st.divider()
 
 # ==========================================
-# 4. SECCIÓN 3: DESAFÍO DE CERTIFICACIÓN (TABLAS)
-# ==========================================
-st.header("🎯 Desafío Pro: El Validador de Tablas")
-st.write("Demuestra tu dominio de los patrones. Debes programar la lógica para la tabla que el sistema te asigne.")
+# 1. CONFIGURACIÓN
+st.set_page_config(page_title="Master en Bucles - UTS", page_icon="💻", layout="wide")
 
-# Persistencia del número base en la sesión
+st.title("🚀 Desafío de Ingeniería: Construcción de Bucles")
+st.markdown("---")
+
+# --- SECCIÓN DE RETO DE PROGRAMACIÓN ---
+st.header("🎯 Reto: Programación de Tablas de Multiplicar")
+st.write("""
+**Instrucciones:** No basta con la fórmula. Debes escribir el ciclo completo en Python para generar la tabla.
+Usa la variable `base` que te asigna el sistema.
+""")
+
 if 'base_reto' not in st.session_state:
     st.session_state.base_reto = random.randint(2, 9)
 
 base = st.session_state.base_reto
-col_input, col_valid = st.columns([1, 1])
+
+col_input, col_output = st.columns([1.2, 0.8])
 
 with col_input:
-    st.info(f"👉 **RETO:** Programar la tabla del **{base}**")
-    codigo_estudiante = st.text_input("Escribe la expresión para calcular el resultado (usa 'i'):", placeholder="Ej: i * base")
+    st.info(f"👉 **RETO:** Generar la tabla del **{base}** (del 1 al 10)")
     
-    if st.button("🎲 Cambiar Número de Tabla"):
+    # Área de texto para código multilínea
+    codigo_usuario = st.text_area(
+        "Escribe tu código Python aquí:",
+        value=f"# Ejemplo:\nfor i in range(1, 11):\n    print(base * i)",
+        height=150
+    )
+    
+    if st.button("🎲 Cambiar Número"):
         st.session_state.base_reto = random.randint(2, 9)
         st.rerun()
 
-with col_valid:
-    if codigo_estudiante:
+with col_output:
+    st.subheader("🖥️ Ejecución y Validación")
+    
+    if codigo_usuario:
+        # Capturamos la salida del print()
+        f = io.StringIO()
         try:
-            fallos = 0
-            check_data = []
-            for i in range(10):
-                esperado = base * (i + 1)
-                intento = eval(codigo_estudiante, {"i": i, "base": base})
-                es_valido = (intento == esperado)
-                if not es_valido: fallos += 1
-                check_data.append({"Multiplicación": f"{base} x {i+1}", "Tu Valor": intento, "Correcto": esperado, "Status": "✅" if es_valido else "❌"})
+            with contextlib.redirect_stdout(f):
+                # Ejecutamos el código del alumno en un entorno controlado
+                # Pasamos 'base' como variable global disponible
+                exec(codigo_usuario, {"base": base, "print": print})
             
-            st.dataframe(pd.DataFrame(check_data), use_container_width=True)
+            # Obtenemos lo que el alumno imprimió
+            salida = f.getvalue().strip().split('\n')
             
-            if fallos == 0:
+            # Limpiamos y convertimos a números para validar
+            resultados_alumno = []
+            for val in salida:
+                try:
+                    # Intentamos extraer el último número de la línea o la línea completa
+                    num = int(val.split('=')[-1].strip())
+                    resultados_alumno.append(num)
+                except:
+                    continue
+
+            # VALIDACIÓN LÓGICA
+            esperado = [base * i for i in range(1, 11)]
+            
+            if resultados_alumno == esperado:
                 st.balloons()
-                st.success(f"¡LOGRADO! Tu algoritmo para la tabla del {base} es perfecto.")
+                st.success("✨ ¡CÓDIGO PERFECTO! Has construido el ciclo correctamente.")
+                st.write("**Tu salida:**")
+                st.code(f.getvalue())
             else:
-                st.error(f"Lógica incorrecta: fallaste en {fallos} resultados. ¡Ajusta tu fórmula!")
+                st.error("❌ La salida no coincide con la tabla esperada.")
+                st.write("**Tu salida actual:**")
+                st.code(f.getvalue() if f.getvalue() else "No hubo salida (usa print)")
+                st.info(f"Pista: Tu código debe imprimir exactamente 10 valores: {esperado}")
+
         except Exception as e:
-            st.warning("⚠️ Error de sintaxis. Revisa el uso de operadores como `*`.")
+            st.warning(f"⚠️ Error de sintaxis en tu código: {e}")
 
 st.divider()
-st.caption("Ingeniería de Sistemas - UTS | Desarrollado por el Ing. Nelber Montaguth")
+
+# --- SECCIÓN VISUAL DE COMPARACIÓN ---
+st.subheader("💡 Ayuda Visual: Estructura de los Ciclos")
+col_for, col_while = st.columns(2)
+
+with col_for:
+    st.markdown("**Patrón del Ciclo FOR**")
+    st.code(f"for i in range(1, 11):\n    resultado = {base} * i\n    print(resultado)", language="python")
+    st.caption("Ideal cuando conoces el número exacto de vueltas.")
+
+with col_while:
+    st.markdown("**Patrón del Ciclo WHILE**")
+    st.code(f"i = 1\nwhile i <= 10:\n    print({base} * i)\n    i += 1", language="python")
+    st.caption("Ideal cuando dependes de una condición lógica.")
+
+st.caption("Laboratorio de Programación UTS - Ing. Nelber Montaguth")
