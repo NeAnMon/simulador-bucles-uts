@@ -79,69 +79,75 @@ st.divider()
 # ==========================================
 # 4. SECCIÓN 3: RETO DE PROGRAMACIÓN (CON EXEC)
 # ==========================================
-st.header("🎯 Reto: Programación de Tablas de Multiplicar")
-st.write("Debes escribir el ciclo completo en Python. El sistema validará tu salida.")
+
+st.header("🎯 Reto de Programación: Tablas de Multiplicar")
+st.write("Demuestra tu lógica de programación. Debes construir el ciclo completo.")
 
 if 'base_reto' not in st.session_state:
     st.session_state.base_reto = random.randint(2, 9)
 
 base = st.session_state.base_reto
-col_input, col_output = st.columns([1.2, 0.8])
+col_input, col_output = st.columns([1, 1])
 
 with col_input:
-    st.info(f"👉 **RETO:** Generar la tabla del **{base}** (del 1 al 10)")
+    st.info(f"👉 **TU MISIÓN:** Generar la tabla del **{base}** (del 1 al 10)")
+    
+    # El área de código ahora está vacía para forzarlos a pensar
     codigo_usuario = st.text_area(
         "Escribe tu código Python aquí:",
-        value=f"for i in range(1, 11):\n    print(base * i)",
-        height=150
+        placeholder="# Pista: Usa un ciclo for o while y la variable 'base'\n# No olvides el print()",
+        height=200
     )
-    if st.button("🎲 Cambiar Número"):
+    
+    # PISTA SENCILLA (Sustituye a la ayuda visual anterior)
+    with st.expander("💡 ¿Necesitas una pista?"):
+        st.write("""
+        **Recuerda la estructura básica:**
+        1.  Inicia el ciclo (usa `for` con `range` o un `while` con un contador).
+        2.  Calcula el resultado usando la variable `base`.
+        3.  Muestra el resultado con `print()`.
+        4.  *Si usas while, ¡no olvides aumentar el contador!*
+        """)
+
+    if st.button("🎲 Generar otro número"):
         st.session_state.base_reto = random.randint(2, 9)
         st.rerun()
 
 with col_output:
-    st.subheader("🖥️ Ejecución y Validación")
+    st.subheader("🖥️ Validador de Algoritmo")
     if codigo_usuario:
         f = io.StringIO()
         try:
             with contextlib.redirect_stdout(f):
-                # Ejecutamos con acceso a 'base' y 'print'
+                # Ejecutamos con acceso a 'base'
                 exec(codigo_usuario, {"base": base, "print": print})
             
             salida = f.getvalue().strip().split('\n')
             resultados_alumno = []
             for val in salida:
                 try:
-                    # Extraer el número (maneja casos como '7 x 1 = 7')
+                    # Extraer el último número de la línea
                     num = int(val.split('=')[-1].strip())
                     resultados_alumno.append(num)
                 except:
                     continue
 
+            # Validación contra el resultado esperado
             esperado = [base * i for i in range(1, 11)]
             
             if resultados_alumno == esperado:
                 st.balloons()
-                st.success("✨ ¡CÓDIGO PERFECTO!")
-                st.code(f.getvalue())
+                st.success("✨ ¡EXCELENTE! Algoritmo validado con éxito.")
+                st.code(f.getvalue(), language="text")
             else:
-                st.error("❌ La salida no coincide.")
-                st.info(f"Se esperaba: {esperado}")
-                st.code(f.getvalue())
+                st.error("❌ El resultado no es el esperado.")
+                if not f.getvalue():
+                    st.warning("Tu código no imprimió nada. Usa print() para mostrar los resultados.")
+                else:
+                    st.write("Tu código imprimió:")
+                    st.code(f.getvalue(), language="text")
 
         except Exception as e:
-            st.warning(f"⚠️ Error de sintaxis: {e}")
+            st.error(f"⚠️ Error de sintaxis o lógica: {e}")
 
-st.divider()
-
-# --- AYUDA VISUAL ---
-st.subheader("💡 Ayuda Visual: Estructura de los Ciclos")
-col_for, col_while = st.columns(2)
-with col_for:
-    st.markdown("**Patrón FOR**")
-    st.code(f"for i in range(1, 11):\n    print({base} * i)")
-with col_while:
-    st.markdown("**Patrón WHILE**")
-    st.code(f"i = 1\nwhile i <= 10:\n    print({base} * i)\n    i += 1")
-
-st.caption("Laboratorio UTS - Ing. Nelber Montaguth")
+st.caption("Ingeniería de Sistemas UTS | Evaluación de Competencias Lógicas")
